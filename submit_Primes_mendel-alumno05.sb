@@ -1,0 +1,26 @@
+#!/bin/bash
+#SBATCH -J primes_all
+#SBATCH -p hpc-bio-mendel
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --time=00:50:00
+#SBATCH --output=primes_%j.out
+#SBATCH --chdir=/home/alumno05/lab-py-advan
+
+set -euo pipefail
+module load anaconda/2025.06
+
+for NUMBER in 1000000 10000000; do
+  for NPROCS in 1 2 4 8; do
+    export NUMBER NPROCS
+    echo "==============================================="
+    echo "number=$NUMBER | step_cores=-c $NPROCS"
+    echo "==============================================="
+    srun --exclusive -c "$NPROCS" --cpu-bind=cores ipython primes-par-alumno05.ipynb
+  done
+done
+
+echo "END=$(date)"
+module unload anaconda/2025.06
+

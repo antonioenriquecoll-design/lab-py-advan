@@ -1,0 +1,36 @@
+#!/bin/bash
+#SBATCH -J reduc_all
+#SBATCH -p hpc-bio-mendel
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --time=01:10:00
+#SBATCH --output=reduc_%j.out
+#SBATCH --chdir=/home/alumno05/lab-py-advan
+
+set -euo pipefail
+module load anaconda/2025.06
+
+# Recomendado: limitar hilos de BLAS/MKL para que no “pisen” tus cores
+export OMP_NUM_THREADS=1
+export MKL_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1
+
+for VALUE in 100000000 1000000000; do
+  for NPROCS in 1 2 4 8; do
+    export VALUE NPROCS
+    # Para Numba: fija nº de hilos (si tu notebook lo respeta, mejor aún)
+    export NUMBA_NUM_THREADS="$NPROCS"
+
+    echo "==============================================="
+    echo "VALUE=$VALUE | NPROCS=$NPROCS | srun -c $NPROCS"
+    echo "==============================================="
+
+    srun --exclusive -c "$NPROCS" --cpu-bind=cores \
+      ipython reduc-operation-array-par-alumno05.ipynb
+  done
+done
+
+echo "END=$(date)"
+module unload anaconda/2025.06
+

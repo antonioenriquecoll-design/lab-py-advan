@@ -1,0 +1,37 @@
+#!/bin/bash
+#SBATCH -J pi_extra
+#SBATCH -p hpc-bio-mendel
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --time=00:10:00
+#SBATCH --output=pi_%j.out
+#SBATCH --error=pi_%j.err
+#SBATCH --chdir=/home/alumno05/lab-py-advan
+
+set -euo pipefail
+
+module load anaconda/2025.06
+
+# Para que tu notebook use exactamente los cores asignados
+export NTHREADS="$SLURM_CPUS_PER_TASK"
+export NPROCS="$SLURM_CPUS_PER_TASK"
+export OMP_NUM_THREADS="$SLURM_CPUS_PER_TASK"
+export MKL_NUM_THREADS="$SLURM_CPUS_PER_TASK"
+export NUMBA_NUM_THREADS="$SLURM_CPUS_PER_TASK"
+
+echo "JOBID=$SLURM_JOB_ID"
+echo "PARTITION=$SLURM_JOB_PARTITION"
+echo "HOST=$(hostname)"
+echo "PWD=$(pwd)"
+echo "NTHREADS=$NTHREADS"
+echo "NPROCS=$NPROCS"
+echo "START=$(date)"
+
+# Ejecuta el notebook (ejecuta celdas de verdad)
+ipython pi-par-solution-alumno05.ipynb
+
+echo "END=$(date)"
+
+module unload anaconda/2025.06
+
